@@ -144,9 +144,9 @@ function restoreToggleState() {
             }
             // Sync juga layer tambahan kecamatan
             if (layerId === 'kecamatan-layer') {
-                ['kecamatan-line-layer', 'kecamatan-label-layer'].forEach(id => {
-                    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility);
-                });
+                if (map.getLayer('kecamatan-line-layer')) {
+                    map.setLayoutProperty('kecamatan-line-layer', 'visibility', visibility);
+                }
             }
         });
         // Sync tombol toggle di sidebar
@@ -204,19 +204,8 @@ function loadKecamatan() {
             layout: { visibility: 'visible' }
         });
     }
-    if (!map.getLayer('kecamatan-label-layer')) {
-        map.addLayer({
-            id: 'kecamatan-label-layer', source: 'kecamatan', type: 'symbol',
-            layout: {
-                'text-field' : ['get', 'nama'],
-                'text-font'  : ['Noto Sans Regular', 'Open Sans Regular', 'Arial Unicode MS Regular'],
-                'text-size'  : 10,
-                'text-anchor': 'center',
-                'visibility' : 'visible'
-            },
-            paint: { 'text-color': '#1e40af', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }
-        });
-    }
+    // Label kecamatan dihapus karena basemap raster tidak support glyphs
+    // Kecamatan tetap tampil sebagai fill + outline
 
     // Pasang listener hanya sekali
     if (!window._kecamatanListenerAttached) {
@@ -444,7 +433,7 @@ window.toggleLayerKecamatan = () => {
     const next = vis === 'visible' ? 'none' : 'visible';
     console.log('visibility kecamatan', vis);
     console.log('nextState kecamatan', next);
-    ['kecamatan-layer', 'kecamatan-line-layer', 'kecamatan-label-layer'].forEach(id => {
+    ['kecamatan-layer', 'kecamatan-line-layer'].forEach(id => {
         if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', next);
     });
     // Simpan state kecamatan ke toggleState
