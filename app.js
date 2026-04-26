@@ -4,30 +4,42 @@
 // Basemap pakai OpenFreeMap - gratis, tanpa API key, tampilan bagus
 // URL tiles per basemap - kita hanya ganti tiles, bukan seluruh style
 // Dengan cara ini layer data kita tidak pernah hilang saat ganti basemap
-// Basemap gratis tanpa API key
-const basemapStreet    = 'https://tiles.openfreemap.org/styles/liberty';
-const basemapDark      = 'https://tiles.openfreemap.org/styles/dark';
+// Semua basemap pakai raster tiles - format seragam, tidak ada glyphs conflict
+// Tidak perlu API key apapun
+function buatStyleRaster(tilesUrl, attribution) {
+    return {
+        version: 8,
+        glyphs : 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+        sources: {
+            basemap: {
+                type       : 'raster',
+                tiles      : [tilesUrl],
+                tileSize   : 256,
+                attribution: attribution
+            }
+        },
+        layers: [{
+            id     : 'basemap-layer',
+            type   : 'raster',
+            source : 'basemap',
+            minzoom: 0,
+            maxzoom: 22
+        }]
+    };
+}
 
-// Satelit pakai ESRI World Imagery - gratis tanpa API key
-const basemapSatellite = {
-    version: 8,
-    sources: {
-        'esri-satellite': {
-            type       : 'raster',
-            tiles      : ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-            tileSize   : 256,
-            attribution: '© Esri, Maxar, Earthstar Geographics'
-        }
-    },
-    layers: [{
-        id    : 'esri-satellite-layer',
-        type  : 'raster',
-        source: 'esri-satellite',
-        minzoom: 0,
-        maxzoom: 19
-    }],
-    glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf'
-};
+const basemapStreet    = buatStyleRaster(
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    '© OpenStreetMap contributors'
+);
+const basemapDark      = buatStyleRaster(
+    'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+    '© CartoDB'
+);
+const basemapSatellite = buatStyleRaster(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    '© Esri, Maxar, Earthstar Geographics'
+);
 
 // ===================================
 // INISIALISASI MAP
@@ -378,32 +390,24 @@ const layerDataBackup = [
     { key: 'drg',       type: 'circle' },
 ];
 
-function gantiBasemap(styleUrl) {
-    // 1. Catat visibility state sebelum ganti (sudah ada di toggleState)
-    console.log('Ganti basemap:', styleUrl);
+function gantiBasemap(styleObj) {
+    console.log('Ganti basemap...');
 
-    // 2. setStyle - ini akan reset semua layer
-    map.setStyle(styleUrl);
+    // setStyle dengan style object raster
+    map.setStyle(styleObj);
 
-    // 3. Setelah style selesai load, restore semua layer data
+    // Setelah style load, restore semua layer data
     map.once('style.load', () => {
         console.log('style.load setelah ganti basemap - restore layer data...');
-
-        // Handle sprite yang mungkin gagal load
-        map.on('styleimagemissing', (e) => {
-            const empty = { width: 1, height: 1, data: new Uint8Array(4) };
-            if (!map.hasImage(e.id)) map.addImage(e.id, empty);
-        });
-
-        // Restore semua layer data
-        loadKecamatan();
-        loadJalan();
 
         // Reset listener flags supaya bisa dipasang ulang
         window._kecamatanListenerAttached = false;
         window._jalanListenerAttached     = false;
         Object.values(kategoriConfig).forEach(cfg => { cfg._listenerAttached = false; });
 
+        // Restore semua layer data
+        loadKecamatan();
+        loadJalan();
         loadSemuaFasilitas(false);
     });
 }
