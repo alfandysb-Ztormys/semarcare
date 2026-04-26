@@ -4,16 +4,30 @@
 // Basemap pakai OpenFreeMap - gratis, tanpa API key, tampilan bagus
 // URL tiles per basemap - kita hanya ganti tiles, bukan seluruh style
 // Dengan cara ini layer data kita tidak pernah hilang saat ganti basemap
-const basemapTiles = {
-    street   : 'https://basemap.mapid.io/styles/street-2d-building/style.json?key=69a8edeffdb1d3dbc8b3022c',
-    dark     : 'https://basemap.mapid.io/styles/dark/style.json?key=69a8edeffdb1d3dbc8b3022c',
-    satellite: 'https://basemap.mapid.io/styles/satellite/style.json?key=69a8edeffdb1d3dbc8b3022c',
-};
+// Basemap gratis tanpa API key
+const basemapStreet    = 'https://tiles.openfreemap.org/styles/liberty';
+const basemapDark      = 'https://tiles.openfreemap.org/styles/dark';
 
-// Style awal pakai MAPID Street
-const basemapStreet    = basemapTiles.street;
-const basemapDark      = basemapTiles.dark;
-const basemapSatellite = basemapTiles.satellite;
+// Satelit pakai ESRI World Imagery - gratis tanpa API key
+const basemapSatellite = {
+    version: 8,
+    sources: {
+        'esri-satellite': {
+            type       : 'raster',
+            tiles      : ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+            tileSize   : 256,
+            attribution: '© Esri, Maxar, Earthstar Geographics'
+        }
+    },
+    layers: [{
+        id    : 'esri-satellite-layer',
+        type  : 'raster',
+        source: 'esri-satellite',
+        minzoom: 0,
+        maxzoom: 19
+    }],
+    glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf'
+};
 
 // ===================================
 // INISIALISASI MAP
